@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "316872733832",
+    "project_id": "bookverse-eaadb",
+    "storage_bucket": "bookverse-eaadb.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:316872733832:android:ee07fc0cec1bbcf81f9b3d",
+        "android_client_info": {
+          "package_name": "com.example.flutter_project"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCt3P5Ydl-5CNUrmTGTaxXJWOniGqFBOxs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
