@@ -1,3 +1,4 @@
+
 class Book {
   final String id;
   final String title;
@@ -14,6 +15,22 @@ class Book {
     required this.addedDate,
     this.pageCount,
   });
+
+  Book copyWith({
+    String? title,
+    String? author,
+    String? status,
+    int? pageCount,
+  }) {
+    return Book(
+      id: id,
+      title: title ?? this.title,
+      author: author ?? this.author,
+      status: status ?? this.status,
+      addedDate: addedDate,
+      pageCount: pageCount ?? this.pageCount,
+    );
+  }
 
   Map<String, dynamic> toMap() => {
         'title': title,

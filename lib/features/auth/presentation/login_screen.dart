@@ -1,105 +1,108 @@
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:bookverse/core/theme_provider.dart'; // ĐÃ THÊM DÒNG NÀY
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
-  @override State<LoginScreen> createState() => _LoginScreenState();
+  @override
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
-  final emailCtrl = TextEditingController();
-  final passCtrl = TextEditingController();
-  bool loading = false;
+class _LoginScreenState extends ConsumerState<LoginScreen> {
+  final _emailCtrl = TextEditingController();
+  final _passCtrl = TextEditingController();
+  bool _loading = false;
 
   Future<void> _login() async {
-    if (emailCtrl.text.trim().isEmpty || passCtrl.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Vui lòng nhập đầy đủ email và mật khẩu')),
-      );
-      return;
-    }
-
-    setState(() => loading = true);
+    setState(() => _loading = true);
     try {
       await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: emailCtrl.text.trim(),
-        password: passCtrl.text,
+        email: _emailCtrl.text.trim(),
+        password: _passCtrl.text,
       );
       if (mounted) context.go('/home');
     } on FirebaseAuthException catch (e) {
       String msg = 'Đăng nhập thất bại';
-      if (e.code == 'user-not-found') msg = 'Email chưa được đăng ký';
-      else if (e.code == 'wrong-password') msg = 'Mật khẩu không đúng';
-      else if (e.code == 'invalid-credential') msg = 'Email hoặc mật khẩu không đúng';
-      else if (e.code == 'too-many-requests') msg = 'Quá nhiều lần thử, vui lòng đợi 1 phút';
-      else if (e.code == 'network-request-failed') msg = 'Lỗi mạng, kiểm tra kết nối Internet';
-      else msg = e.message ?? msg;
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(msg),
-          backgroundColor: Colors.red,
-        ));
+      if (e.code == 'user-not-found' || e.code == 'wrong-password') {
+        msg = 'Email hoặc mật khẩu không đúng';
+      } else if (e.code == 'too-many-requests') {
+        msg = 'Quá nhiều lần thử, vui lòng đợi 1 phút';
       }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Lỗi không xác định, vui lòng thử lại'),
-          backgroundColor: Colors.red,
-        ));
-      }
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
     } finally {
-      if (mounted) setState(() => loading = false);
+      setState(() => _loading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('BookVerse'),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.language),
+            onPressed: () => context.setLocale(
+              context.locale.languageCode == 'vi' ? const Locale('en') : const Locale('vi'),
+            ),
+          ),
+          IconButton(
+            icon: Icon(Theme.of(context).brightness == Brightness.dark ? Icons.light_mode : Icons.dark_mode),
+            onPressed: () {
+              ref.read(themeProvider.notifier).state = 
+                  Theme.of(context).brightness == Brightness.dark ? ThemeMode.light : ThemeMode.dark;
+            },
+          ),
+        ],
+      ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(24.0),
+          padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Icon(Icons.book_rounded, size: 100, color: Colors.deepPurple),
-              const Text('BookVerse', style: TextStyle(fontSize: 42, fontWeight: FontWeight.bold)),
+              const Text('BookVerse', style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold, color: Colors.deepPurple)),
               const SizedBox(height: 50),
               TextField(
-                controller: emailCtrl,
+                controller: _emailCtrl,
                 keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(
-                  labelText: 'Email',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.email),
+                decoration: InputDecoration(
+                  labelText: 'email'.tr(),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  prefixIcon: const Icon(Icons.email),
                 ),
               ),
               const SizedBox(height: 16),
               TextField(
-                controller: passCtrl,
+                controller: _passCtrl,
                 obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: 'Mật khẩu',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.lock),
+                decoration: InputDecoration(
+                  labelText: 'password'.tr(),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  prefixIcon: const Icon(Icons.lock),
                 ),
               ),
-              const SizedBox(height: 30),
+              const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
-                height: 50,
+                height: 56,
                 child: ElevatedButton(
-                  onPressed: loading ? null : _login,
-                  child: loading
+                  onPressed: _loading ? null : _login,
+                  style: ElevatedButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+                  child: _loading
                       ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text('Đăng nhập', style: TextStyle(fontSize: 18)),
+                      : Text('login'.tr(), style: const TextStyle(fontSize: 18)),
                 ),
               ),
               TextButton(
                 onPressed: () => context.push('/register'),
-                child: const Text('Chưa có tài khoản? Đăng ký ngay'),
+                child: Text('no_account'.tr(), style: const TextStyle(color: Colors.deepPurple)),
               ),
             ],
           ),

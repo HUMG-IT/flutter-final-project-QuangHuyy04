@@ -1,4 +1,3 @@
-// lib/features/book/presentation/screens/add_book_screen.dart
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:uuid/uuid.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 import '../../data/book_model.dart';
 import '../providers/book_provider.dart';
@@ -31,7 +31,7 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
   Future<void> _scanISBN() async {
     if (kIsWeb) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Quét ISBN chỉ hỗ trợ trên điện thoại')),
+        SnackBar(content: Text('scan_isbn_web_warning'.tr())),
       );
       return;
     }
@@ -67,7 +67,10 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Thêm sách mới'), centerTitle: true),
+      appBar: AppBar(
+        title: Text('add_book'.tr()),
+        centerTitle: true,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -77,29 +80,38 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
               children: [
                 TextFormField(
                   controller: _titleCtrl,
-                  decoration: const InputDecoration(labelText: 'Tên sách', border: OutlineInputBorder()),
-                  validator: (v) => v?.trim().isEmpty == true ? 'Vui lòng nhập tên sách' : null,
+                  decoration: InputDecoration(
+                    labelText: 'book_title'.tr(),
+                    border: const OutlineInputBorder(),
+                  ),
+                  validator: (v) => v?.trim().isEmpty == true ? 'required_field'.tr() : null,
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _authorCtrl,
-                  decoration: const InputDecoration(labelText: 'Tác giả', border: OutlineInputBorder()),
+                  decoration: InputDecoration(
+                    labelText: 'author'.tr(),
+                    border: const OutlineInputBorder(),
+                  ),
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _pageCtrl,
-                  decoration: const InputDecoration(labelText: 'Số trang', border: OutlineInputBorder()),
+                  decoration: InputDecoration(
+                    labelText: 'pages'.tr(),
+                    border: const OutlineInputBorder(),
+                  ),
                   keyboardType: TextInputType.number,
                 ),
                 const SizedBox(height: 16),
 
                 FormField<String>(
                   initialValue: _status,
-                  validator: (value) => value == null ? 'Vui lòng chọn trạng thái' : null,
+                  validator: (value) => value == null ? 'required_field'.tr() : null,
                   builder: (FormFieldState<String> field) {
                     return InputDecorator(
                       decoration: InputDecoration(
-                        labelText: 'Trạng thái',
+                        labelText: 'status'.tr(),
                         border: const OutlineInputBorder(),
                         errorText: field.errorText,
                       ),
@@ -108,7 +120,7 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
                           value: field.value,
                           isDense: true,
                           isExpanded: true,
-                          hint: const Text('Chọn trạng thái'),
+                          hint: Text('select_status'.tr()),
                           items: const [
                             DropdownMenuItem(value: 'wantToRead', child: Text('Muốn đọc')),
                             DropdownMenuItem(value: 'reading', child: Text('Đang đọc')),
@@ -134,7 +146,7 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
                   OutlinedButton.icon(
                     onPressed: _scanISBN,
                     icon: const Icon(Icons.qr_code_scanner),
-                    label: const Text('Quét mã ISBN'),
+                    label: Text('scan_isbn'.tr()),
                   ),
 
                 const SizedBox(height: 32),
@@ -157,11 +169,11 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
                     if (mounted) {
                       context.pop();
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Đã thêm sách thành công!')),
+                        SnackBar(content: Text('book_added'.tr()), backgroundColor: Colors.green),
                       );
                     }
                   },
-                  child: const Text('Lưu sách', style: TextStyle(fontSize: 18)),
+                  child: Text('save_book'.tr(), style: const TextStyle(fontSize: 18)),
                 ),
               ],
             ),
