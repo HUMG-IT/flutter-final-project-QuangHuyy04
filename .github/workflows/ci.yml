@@ -1,4 +1,4 @@
-name: CI/CD
+name: Flutter CI/CD
 
 on:
   push:
@@ -9,7 +9,6 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -28,8 +27,7 @@ jobs:
         run: flutter analyze --no-fatal-infos
 
       - name: Run tests
-        run: flutter test --machine > test-results.json || echo "Tests failed but continue"
+        run: flutter test
 
-      - name: Build Web (for verification)
-        run: flutter build web --release --no-tree-shake-icons
-        continue-on-error: true 
+      - name: Build Web
+        run: flutter build web --release

@@ -15,9 +15,14 @@ class ProfileScreen extends ConsumerStatefulWidget {
 
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   final _nameCtrl = TextEditingController();
-  DateTime? _birthDate;
+  final _currentPassCtrl = TextEditingController();
+  final _newPassCtrl = TextEditingController();
+  final _confirmPassCtrl = TextEditingController();
   final _jobCtrl = TextEditingController();
+
+  DateTime? _birthDate;
   bool _loading = false;
+  bool _changingPassword = false;
 
   @override
   void initState() {
@@ -30,8 +35,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
     if (doc.exists) {
       final data = doc.data()!;
-      _nameCtrl.text = data['displayName'] ?? '';
-      _birthDate = data['birthDate'] != null ? DateTime.parse(data['birthDate']) : null;
+      _nameCtrl.text = data['displayName'] ?? user.displayName ?? '';
+      _birthDate = data['birthDate'] != null ? DateTime.tryParse(data['birthDate']) : null;
       _jobCtrl.text = data['job'] ?? '';
       setState(() {});
     }
@@ -48,15 +53,50 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       }, SetOptions(merge: true));
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('profile_saved'.tr()),
-          backgroundColor: Colors.green,
-        ),
+        SnackBar(content: Text('profile_saved'.tr()), backgroundColor: Colors.green),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('error'.tr())),
+        SnackBar(content: Text('Lỗi lưu hồ sơ'), backgroundColor: Colors.red),
       );
+    } finally {
+      setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _changePassword() async {
+    if (_newPassCtrl.text != _confirmPassCtrl.text) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('password_not_match'.tr()), backgroundColor: Colors.red),
+      );
+      return;
+    }
+    if (_newPassCtrl.text.length < 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('password_too_short'.tr()), backgroundColor: Colors.red),
+      );
+      return;
+    }
+
+    setState(() => _loading = true);
+    try {
+      final user = FirebaseAuth.instance.currentUser!;
+      final credential = EmailAuthProvider.credential(email: user.email!, password: _currentPassCtrl.text);
+      await user.reauthenticateWithCredential(credential);
+      await user.updatePassword(_newPassCtrl.text);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('password_changed'.tr()), backgroundColor: Colors.green),
+      );
+
+      _currentPassCtrl.clear();
+      _newPassCtrl.clear();
+      _confirmPassCtrl.clear();
+      setState(() => _changingPassword = false);
+    } on FirebaseAuthException catch (e) {
+      String msg = 'change_password_failed'.tr();
+      if (e.code == 'wrong-password') msg = 'wrong_current_password'.tr();
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg), backgroundColor: Colors.red));
     } finally {
       setState(() => _loading = false);
     }
@@ -66,13 +106,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser!;
     final age = _birthDate != null
-        ? DateTime.now().year -
-            _birthDate!.year -
-            ((DateTime.now().month < _birthDate!.month ||
-                    (DateTime.now().month == _birthDate!.month && DateTime.now().day < _birthDate!.day))
-                ? 1
-                : 0)
+        ? DateTime.now().year - _birthDate!.year - ((DateTime.now().month < _birthDate!.month || (DateTime.now().month == _birthDate!.month && DateTime.now().day < _birthDate!.day)) ? 1 : 0)
         : null;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(
@@ -81,20 +117,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.language),
-            onPressed: () {
-              context.setLocale(
-                context.locale.languageCode == 'vi' ? const Locale('en') : const Locale('vi'),
-              );
-            },
+            onPressed: () => context.setLocale(context.locale.languageCode == 'vi' ? const Locale('en') : const Locale('vi')),
           ),
           IconButton(
-            icon: Icon(
-              Theme.of(context).brightness == Brightness.dark ? Icons.light_mode : Icons.dark_mode,
-            ),
-            onPressed: () {
-              ref.read(themeProvider.notifier).state =
-                  Theme.of(context).brightness == Brightness.dark ? ThemeMode.light : ThemeMode.dark;
-            },
+            icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode),
+            onPressed: () => ref.read(themeProvider.notifier).state = isDark ? ThemeMode.light : ThemeMode.dark,
           ),
         ],
       ),
@@ -102,79 +129,55 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         padding: const EdgeInsets.all(24),
         child: Column(
           children: [
-            CircleAvatar(
-              radius: 60,
-              backgroundColor: Colors.deepPurple,
-              child: Text(
-                user.email![0].toUpperCase(),
-                style: const TextStyle(fontSize: 60, color: Colors.white),
-              ),
-            ),
+            CircleAvatar(radius: 60, backgroundColor: Colors.deepPurple, child: Text(user.email![0].toUpperCase(), style: const TextStyle(fontSize: 60, color: Colors.white))),
             const SizedBox(height: 16),
             Text(user.email!, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             const SizedBox(height: 32),
 
-            TextField(
-              controller: _nameCtrl,
-              decoration: InputDecoration(
-                labelText: 'full_name'.tr(),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-            ),
+            // Thông tin cá nhân
+            TextField(controller: _nameCtrl, decoration: InputDecoration(labelText: 'full_name'.tr(), border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)))),
             const SizedBox(height: 16),
             TextField(
               readOnly: true,
-              controller: TextEditingController(
-                text: _birthDate != null ? DateFormat('dd/MM/yyyy').format(_birthDate!) : '',
-              ),
+              controller: TextEditingController(text: _birthDate != null ? '${_birthDate!.day}/${_birthDate!.month}/${_birthDate!.year}' : ''),
               decoration: InputDecoration(
                 labelText: 'birth_date'.tr(),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 suffixIcon: IconButton(
                   icon: const Icon(Icons.calendar_today),
                   onPressed: () async {
-                    final date = await showDatePicker(
-                      context: context,
-                      initialDate: DateTime.now(),
-                      firstDate: DateTime(1900),
-                      lastDate: DateTime.now(),
-                    );
+                    final date = await showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime(1900), lastDate: DateTime.now());
                     if (date != null) setState(() => _birthDate = date);
                   },
                 ),
               ),
             ),
-            if (age != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 12),
-                child: Text(
-                  'age'.tr(namedArgs: {'age': age.toString()}),
-                  style: const TextStyle(fontSize: 18, color: Colors.blue, fontWeight: FontWeight.w600),
-                ),
-              ),
+            if (age != null) Padding(padding: const EdgeInsets.only(top: 12), child: Text('age'.tr(namedArgs: {'age': age.toString()}), style: const TextStyle(fontSize: 18, color: Colors.blue, fontWeight: FontWeight.bold))),
             const SizedBox(height: 16),
-            TextField(
-              controller: _jobCtrl,
-              decoration: InputDecoration(
-                labelText: 'job'.tr(),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-            ),
+            TextField(controller: _jobCtrl, decoration: InputDecoration(labelText: 'job'.tr(), border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)))),
             const SizedBox(height: 32),
 
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _loading ? null : _saveProfile,
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                child: _loading
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : Text('save_profile'.tr(), style: const TextStyle(fontSize: 18)),
-              ),
+            SizedBox(width: double.infinity, child: ElevatedButton(onPressed: _loading ? null : _saveProfile, child: _loading ? const CircularProgressIndicator(color: Colors.white) : Text('save_profile'.tr()))),
+            const SizedBox(height: 24),
+
+            // ĐỔI MẬT KHẨU
+            OutlinedButton.icon(
+              onPressed: () => setState(() => _changingPassword = !_changingPassword),
+              icon: Icon(_changingPassword ? Icons.keyboard_arrow_up : Icons.vpn_key),
+              label: Text(_changingPassword ? 'hide_change_password'.tr() : 'change_password'.tr()),
+              style: OutlinedButton.styleFrom(foregroundColor: Colors.deepPurple),
             ),
+
+            if (_changingPassword) ...[
+              const SizedBox(height: 16),
+              TextField(obscureText: true, controller: _currentPassCtrl, decoration: InputDecoration(labelText: 'current_password'.tr(), border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), prefixIcon: const Icon(Icons.lock_outline))),
+              const SizedBox(height: 16),
+              TextField(obscureText: true, controller: _newPassCtrl, decoration: InputDecoration(labelText: 'new_password'.tr(), border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), prefixIcon: const Icon(Icons.lock))),
+              const SizedBox(height: 16),
+              TextField(obscureText: true, controller: _confirmPassCtrl, decoration: InputDecoration(labelText: 'confirm_password'.tr(), border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), prefixIcon: const Icon(Icons.lock))),
+              const SizedBox(height: 20),
+              SizedBox(width: double.infinity, child: ElevatedButton(onPressed: _loading ? null : _changePassword, style: ElevatedButton.styleFrom(backgroundColor: Colors.orange), child: _loading ? const CircularProgressIndicator(color: Colors.white) : Text('update_password'.tr()))),
+            ],
           ],
         ),
       ),
@@ -184,6 +187,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   @override
   void dispose() {
     _nameCtrl.dispose();
+    _currentPassCtrl.dispose();
+    _newPassCtrl.dispose();
+    _confirmPassCtrl.dispose();
     _jobCtrl.dispose();
     super.dispose();
   }

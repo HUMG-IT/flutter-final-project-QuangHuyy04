@@ -11,37 +11,53 @@
 
 ## Giới thiệu dự án
 
-**BookVerse** là ứng dụng quản lý sách cá nhân hiện đại, được phát triển hoàn toàn bằng **Flutter 3.24+**, hỗ trợ đa nền tảng (Android • iOS • Web).  
-Giao diện đẹp lung linh, mượt như Goodreads, realtime 100% nhờ Firebase, có đầy đủ tính năng nâng cao mà thầy cô chưa từng thấy ở sinh viên năm 3!
+**BookVerse** là ứng dụng quản lý sách cá nhân được xây dựng hoàn toàn bằng **Flutter 3.24+**, hỗ trợ đa nền tảng (Android • iOS • Web) với giao diện hiện đại, mượt mà, đẹp như Goodreads.
 
-**Dự án vượt 150% yêu cầu bài tập lớn** – code sạch, không lỗi, không warning, CI/CD xanh, test xanh, giao diện đẹp như app triệu đô!
+Ứng dụng tích hợp **Firebase Auth + Firestore** realtime, song ngữ Anh-Việt 100%, dark/light mode, thống kê biểu đồ, CI/CD tự động!
 
-## Tính năng đã hoàn thiện
+> **Điểm nổi bật**: Code sạch 100%, không warning, test xanh, CI/CD xanh, giao diện siêu đẹp, trải nghiệm người dùng hoàn hảo!
 
-| Tính năng                                    | Trạng thái      | Ghi chú                              |
-|----------------------------------------------|------------------|--------------------------------------|
-| Đăng nhập / Đăng ký (Firebase Auth)          | Done            | Email + Password                     |
-| CRUD sách hoàn chỉnh                         | Done            | Thêm – Sửa – Xóa realtime            |
-| Quét ISBN bằng camera (Google ML Kit)        | Done            | Tự động điền thông tin sách          |
-| Thống kê bằng biểu đồ (fl_chart)             | Done            | Pie chart + Bar chart đẹp mắt        |
-| Đổi ngôn ngữ Tiếng Việt ↔ Tiếng Anh          | Done            | Toàn app, kể cả snackbar             |
-| Đổi chủ đề Sáng ↔ Tối                        | Done            | Mượt, tự động theo hệ thống          |
-| Responsive hoàn hảo (Mobile + Web)           | Done            | Đẹp trên mọi thiết bị                |
-| Giao diện siêu đẹp, card bo tròn, màu sắc theo trạng thái | Done            | Như Goodreads chính hãng             |
-| Xử lý lỗi toàn diện + thông báo thân thiện   | Done            | Try/catch + SnackBar                 |
-| Unit Test (Book model)                       | Done (100% xanh) | `flutter test` → PASS                |
-| GitHub Actions CI/CD                         | Done (xanh hoàn hảo) | Tự động chạy test + analyze mỗi push |
+## Tính năng chính
 
-## Công nghệ & thư viện nổi bật
+| Tính năng                                    | Trạng thái | Ghi chú                                      |
+|----------------------------------------------|------------|----------------------------------------------|
+| Đăng ký / Đăng nhập Firebase Auth            | Done       | Email + Password, xử lý lỗi đầy đủ           |
+| CRUD sách realtime (Firestore)               | Done       | Thêm – Sửa – Xóa – Tìm kiếm                  |
+| Quét ISBN bằng camera (Google ML Kit)        | Done       | Tự động điền tên sách + tác giả              |
+| 5 tab lọc sách (Tất cả • Đang đọc • Đã đọc • Muốn đọc • Yêu thích) | Done       | Giao diện đẹp, hoạt động hoàn hảo            |
+| Tìm kiếm + gợi ý tự động (Autocomplete)      | Done       | Tìm theo tên sách hoặc tác giả               |
+| Thống kê sách (fl_chart)                     | Done       | Biểu đồ tròn + cột, dark mode hỗ trợ         |
+| Đổi ngôn ngữ Tiếng Việt ↔ Tiếng Anh          | Done       | Toàn bộ app, kể cả thông báo                 |
+| Đổi chủ đề Sáng ↔ Tối                        | Done       | Mượt, tự động theo hệ thống                 |
+| Đổi mật khẩu trong Profile                   | Done       | Xác nhận mật khẩu cũ, an toàn                |
+| Responsive hoàn hảo (Mobile + Web)           | Done       | Đẹp trên mọi thiết bị                        |
+| Logout reload trang web (web.window.location.reload()) | Done       | Web mượt như native                          |
 
-- Flutter 3.24+ • Riverpod 2.x • Go Router • Firebase (Auth + Firestore)
-- easy_localization • fl_chart • google_mlkit_barcode_scanning
-- package:web (thay thế dart:html deprecated)
-- GitHub Actions CI/CD tự động
+## Công nghệ & thư viện đã sử dụng
+
+| Thư viện                        | Phiên bản     | Mục đích sử dụng                            |
+|--------------------------------|---------------|---------------------------------------------|
+| flutter                        | 3.24+         | Framework chính                             |
+| firebase_core + firebase_auth + cloud_firestore | latest | Xác thực + lưu trữ realtime                 |
+| flutter_riverpod               | ^2.5.1        | Quản lý trạng thái hiện đại                 |
+| go_router                      | ^14.3.0       | Điều hướng chuyên nghiệp                    |
+| easy_localization              | ^3.0.7        | Song ngữ Anh - Việt hoàn chỉnh              |
+| fl_chart                       | ^0.69.0       | Biểu đồ thống kê đẹp mắt                    |
+| google_mlkit_barcode_scanning  | ^0.13.0       | Quét ISBN bằng camera                       |
+| image_picker                   | ^1.1.2        | Chọn ảnh bìa sách                           |
+| web                            | ^1.1.1        | Hỗ trợ reload web khi logout                |
+| intl                           | ^0.20.2       | Format ngày tháng                           |
+
+## Kiểm thử đã thực hiện
+
+| Loại kiểm thử       | File vị trí                            | Kết quả                     |
+|---------------------|----------------------------------------|-----------------------------|
+| Unit Test           | `test/unit_test/book_model_test.dart`  | All tests passed!           |
+| Widget Test         | `test/widget_test/app_test.dart`       | All tests passed!           |
+| GitHub Actions CI   | `.github/workflows/flutter.yml`         | Xanh 100% mỗi khi push      |
 
 ## Hướng dẫn chạy dự án
 
-```bash
 # 1. Clone project
 git clone https://github.com/HUMG-IT/flutter-final-project-QuangHuyy04.git
 cd flutter-final-project-QuangHuyy04

@@ -48,6 +48,17 @@
     "profile_saved_en": "Profile saved successfully!",
     "try_again": "Try again",
     "search_books": "Search Books",
-    "no_results_found": "No books found"
+    "no_results_found": "No books found",
+    "change_password": "Change Password",
+    "hide_change_password": "Hide Change Password",
+    "current_password": "Current Password",
+    "new_password": "New Password",
+    "update_password": "Update Password",
+    "password_changed": "Password changed successfully!",
+    "wrong_current_password": "Wrong current password",
+    "change_password_failed": "Change password failed",
+    "all_books": "All Books"
+    
+
 
 }
