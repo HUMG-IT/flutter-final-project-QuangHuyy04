@@ -57,7 +57,8 @@
     "password_changed": "Password changed successfully!",
     "wrong_current_password": "Wrong current password",
     "change_password_failed": "Change password failed",
-    "all_books": "All Books"
+    "all_books": "All Books",
+    "wantToRead": "Want to Read"
     
 
 
