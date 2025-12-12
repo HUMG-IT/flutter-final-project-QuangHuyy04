@@ -58,6 +58,7 @@
     "change_password_failed": "Đổi mật khẩu thất bại",
     "all_books": "Tất cả sách",
     "change_password": "Đổi mật khẩu",
-    "wantToRead": "Muốn đọc"
+    "wantToRead": "Muốn đọc",
+    "please_enter_password": "Vui lòng nhập mật khẩu"
 
 }

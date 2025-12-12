@@ -58,7 +58,8 @@
     "wrong_current_password": "Wrong current password",
     "change_password_failed": "Change password failed",
     "all_books": "All Books",
-    "wantToRead": "Want to Read"
+    "wantToRead": "Want to Read",
+    "please_enter_password": "Please enter password"
     
 
 

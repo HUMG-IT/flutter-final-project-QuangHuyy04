@@ -1,11 +1,12 @@
+// lib/features/auth/presentation/register_screen.dart
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:bookverse/core/theme_provider.dart'; 
-
+import 'package:bookverse/core/theme_provider.dart';
+import 'package:bookverse/common/widgets/password_field.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -51,6 +52,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
       appBar: AppBar(
         title: Text('register'.tr()),
@@ -62,11 +65,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             ),
           ),
           IconButton(
-            icon: Icon(Theme.of(context).brightness == Brightness.dark ? Icons.light_mode : Icons.dark_mode),
+            icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode),
             onPressed: () {
-              final current = Theme.of(context).brightness;
-              ref.read(themeProvider.notifier).state = 
-                  current == Brightness.dark ? ThemeMode.light : ThemeMode.dark;
+              ref.read(themeProvider.notifier).state =
+                  isDark ? ThemeMode.light : ThemeMode.dark;
             },
           ),
         ],
@@ -76,13 +78,48 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            TextField(controller: _emailCtrl, decoration: InputDecoration(labelText: 'email'.tr())),
+            TextField(
+              controller: _emailCtrl,
+              keyboardType: TextInputType.emailAddress,
+              decoration: InputDecoration(
+                labelText: 'email'.tr(),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                prefixIcon: const Icon(Icons.email),
+                filled: true,
+                fillColor: isDark ? Colors.grey.shade800 : Colors.grey.shade50,
+              ),
+            ),
             const SizedBox(height: 16),
-            TextField(controller: _passCtrl, obscureText: true, decoration: InputDecoration(labelText: 'password'.tr())),
+
+            // MẬT KHẨU 1 – CÓ ICON MẮT
+            PasswordField(
+              controller: _passCtrl,
+              labelKey: 'password',
+            ),
             const SizedBox(height: 16),
-            TextField(controller: _confirmCtrl, obscureText: true, decoration: InputDecoration(labelText: 'confirm_password'.tr())),
+
+            // MẬT KHẨU 2 – CÓ ICON MẮT
+            PasswordField(
+              controller: _confirmCtrl,
+              labelKey: 'confirm_password',
+              validator: (value) => value != _passCtrl.text ? 'password_not_match'.tr() : null,
+            ),
             const SizedBox(height: 24),
-            ElevatedButton(onPressed: _loading ? null : _register, child: Text('register'.tr())),
+
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _loading ? null : _register,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.deepPurple,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: _loading
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : Text('register'.tr(), style: const TextStyle(fontSize: 18, color: Colors.white)),
+              ),
+            ),
           ],
         ),
       ),

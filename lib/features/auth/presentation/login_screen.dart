@@ -1,10 +1,12 @@
+// lib/features/auth/presentation/login_screen.dart
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:bookverse/core/theme_provider.dart'; // ĐÃ THÊM DÒNG NÀY
+import 'package:bookverse/core/theme_provider.dart';
+import 'package:bookverse/common/widgets/password_field.dart'; // ĐÃ THÊM
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -40,6 +42,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('BookVerse'),
@@ -52,10 +56,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             ),
           ),
           IconButton(
-            icon: Icon(Theme.of(context).brightness == Brightness.dark ? Icons.light_mode : Icons.dark_mode),
+            icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode),
             onPressed: () {
-              ref.read(themeProvider.notifier).state = 
-                  Theme.of(context).brightness == Brightness.dark ? ThemeMode.light : ThemeMode.dark;
+              ref.read(themeProvider.notifier).state =
+                  isDark ? ThemeMode.light : ThemeMode.dark;
             },
           ),
         ],
@@ -69,6 +73,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               const Icon(Icons.book_rounded, size: 100, color: Colors.deepPurple),
               const Text('BookVerse', style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold, color: Colors.deepPurple)),
               const SizedBox(height: 50),
+
+              // Email
               TextField(
                 controller: _emailCtrl,
                 keyboardType: TextInputType.emailAddress,
@@ -76,30 +82,39 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   labelText: 'email'.tr(),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   prefixIcon: const Icon(Icons.email),
+                  filled: true,
+                  fillColor: isDark ? Colors.grey.shade800 : Colors.grey.shade50,
                 ),
               ),
               const SizedBox(height: 16),
-              TextField(
+
+              // Mật khẩu – CÓ ICON MẮT ĐẸP
+              PasswordField(
                 controller: _passCtrl,
-                obscureText: true,
-                decoration: InputDecoration(
-                  labelText: 'password'.tr(),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                  prefixIcon: const Icon(Icons.lock),
-                ),
+                labelKey: 'password',
+                validator: (value) {
+                  if (value == null || value.isEmpty) return 'please_enter_password'.tr();
+                  if (value.length < 6) return 'password_too_short'.tr();
+                  return null;
+                },
               ),
               const SizedBox(height: 24),
+
               SizedBox(
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton(
                   onPressed: _loading ? null : _login,
-                  style: ElevatedButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+                  style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    backgroundColor: Colors.deepPurple,
+                  ),
                   child: _loading
                       ? const CircularProgressIndicator(color: Colors.white)
-                      : Text('login'.tr(), style: const TextStyle(fontSize: 18)),
+                      : Text('login'.tr(), style: const TextStyle(fontSize: 18, color: Colors.white)),
                 ),
               ),
+
               TextButton(
                 onPressed: () => context.push('/register'),
                 child: Text('no_account'.tr(), style: const TextStyle(color: Colors.deepPurple)),
